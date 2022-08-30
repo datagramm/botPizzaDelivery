@@ -1,28 +1,25 @@
-const fs = require('fs');
+let fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
-const CLIENT_ID = '720743800227-jrsfoo5tvd74ea77tcs5t1rok4hu4f8m.apps.googleusercontent.com';
-const CLIENT_SECRET = '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';
+const CLIENT_ID = '';
+const CLIENT_SECRET = '';
 const REDIRECT_URI = 'https://developers.google.com/oauthplayground';
 const REFRESH_TOKEN = '1//04iAkMr_9PXVPCgYIARAAGAQSNwF-L9Irmah8gEbC_xOgDYCtOS7QNK2NOU55PP3q5G-GVUj33b7sSZNt8ruQvnxE2eIeJajI6cc';
-
-
-
-const {Telegraf, Markup} = require('telegraf');
+const express = require('express');
+const router = express.Router();
+const PDFDocument = require('pdfkit');
+const path = require('path');
+const {Telegraf, Markup, Types} = require('telegraf');
 const sender = require('telegraf-sender');
 
 const  {URL}  = require('url')
 const {oauth2} = require("googleapis/build/src/apis/oauth2");
 const {file} = require("googleapis/build/src/apis/file");
+const stream = require("stream");
 
 const bot = new Telegraf('5426099853:AAELnixQGwFZKKZAcZTkl2ZACEOmz2eOafw');
 bot.use(sender)
-let  files = [];
-let massiveId = [];
-let checkValue = [];
-let usersId = [];
-let users = ['367613741', '499758301', '447306969']
-let chat_id = '-1001788556343';
+
 let shortDistanceId;
 let locationPositions = [ {
     id: 0,
@@ -95,60 +92,13 @@ function  compareLocationPosition(arr, arg_latitude, arg_longitude) {
      i++;
  }
 
-
-
 const oauth2Client = new google.auth.OAuth2(
     CLIENT_ID,
     CLIENT_SECRET,
     REDIRECT_URI
 )
 
-
-
 oauth2Client.setCredentials({refresh_token:REFRESH_TOKEN})
-
-function listFiles() {
-    const drive = google.drive({
-        version:'v3',
-        auth: oauth2Client
-    })
-    drive.files.list({
-        q: '\'1IhohQU_VjrZLOlXwrh8b2P6T1l4DBGta\' in parents',
-
-        fields: 'nextPageToken, files(id, name)',
-
-    }, (err, res) => {
-        if (err) return console.log('The API returned an error: ' + err);
-        files = res.data.files;
-
-
-
-
-        if (files.length) {
-            console.log('Files:');
-            files.map((file) => {
-
-                console.log(`${file.name} (${file.id})`);
-
-            });
-
-        } else {
-            console.log('No files found.');
-        }
-
-    });
-
-}
-
-
-
-
-
-
-
-
-
-
 
 bot.hears('start', (ctx) => {
     setInterval(() =>  {ctx.msg.broadcast({
@@ -164,34 +114,8 @@ bot.hears('map', (ctx) => {
 })
 
 
-async function step() {
-
-    await   setInterval(() => {
-        listFiles()
-    }, 4000)
-
-}
-
-step();
 
 
-function getDifference(array1, array2){
-    return array1.filter(object1 => {
-        return !array2.some(object2 => {
-            return object1.id === object2.id;
-        })
-    })
-
-}
-function broadcastQuery(arg_ctx) {
-    if(!(usersId.includes(arg_ctx.chat.id))) {
-        usersId.push(arg_ctx.chat.id)
-        usersId.forEach(element => console.log(element));
-    }
-    else  {
-        return null;
-    }
-}
 let check_add = false;
 let triger = false;
  let latitude;
@@ -380,16 +304,26 @@ function randomValueOfPreCheckOut() {
       return Number(result);
 
 }
-randomValueOfPreCheckOut();
-bot.action('btnBasket', (ctx) => {
 
-    ctx.reply(`Замовлення №${randomValueOfPreCheckOut()} на суму: ${ pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)} грн очікує оплати: \n ${pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount}` )}`,
+let check;
+bot.action('btnBasket', (ctx) => {
+      check = randomValueOfPreCheckOut()
+    ctx.reply(`Замовлення №${check} на суму: ${ pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)} грн очікує оплати: \n ${pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount}` )}`,
         {
-            parse_mode: 'HTML'
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: [
+                    [{text: 'Оплатити/Видалити', callback_data: 'btn_pay'}]
+
+                ]
+            }
         }
         )
 
 })
+
+
+
 
 
 bot.action('add', (ctx) => {
@@ -407,83 +341,108 @@ bot.action('add', (ctx) => {
 
 })
 
+let checkInvoiceCondition = true;
 
 const getInvoice = (id) => {
     const invoice = {
 
         chat_id: id,
         provider_token: '632593626:TEST:sandbox_i38652068230',
-        start_parameter: 'get_access',
-        title: `${pizzaBasket.map(obj =>  obj.name.split('<b>').join('').split('</b>').join(''))}` ,
-        description: `${pizzaBasket.map(obj => obj.description)}`,
+        start_parameter: 'unique_string',
+        title: `Замовлення №${check}` ,
+        description: `Оплата послуг`,
         currency: 'UAH',
         prices: [{label: 'Invoice Title', amount: 100 * pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)}],
         payload: {
             unique_id: `${id}_${Number(new Date())}`,
             provider_token:'632593626:TEST:sandbox_i38652068230'
+        },
+        reply_markup: {
+            inline_keyboard:[
+                [{text: `Оплатити`, pay: true }],
+                    [{text: `Видалити `, callback_data: 'btn_delete' }]
+            ]
+
         }
+
     }
     return invoice;
 }
 
-bot.hears('pay', (ctx) =>{ return ctx.replyWithInvoice(getInvoice(ctx.from.id))
+bot.action('btn_pay',  (ctx) =>{
 
-})
-bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true))
+    if (checkInvoiceCondition === true && pizzaBasket.length !== 0 )  {
 
-bot.on('successful_payment', async (ctx, next) => {
-     await  ctx.reply('SuccessfulPayment')
-})
+        ctx.replyWithInvoice(getInvoice(ctx.from.id))
+        checkInvoiceCondition = false;
 
+    }
+    else if (checkInvoiceCondition === false ){
+        ctx.reply('У вас уже є замовлення в черзі на оплату')
 
-
-bot.command('download', (ctx) =>
-    {
-         setInterval(   () => {
-
-             broadcastQuery(ctx);
-
-            checkValue = [
-                ...getDifference(files, massiveId)
-            ]
-
-
-            if (!(checkValue.length)) {
-                return  massiveId = Object.assign([], files);
-
-
-
-            } else {
-
-                // checkValue = files.filter(file => !massiveId.includes(file.id));
-                //checkValue_ = checkValue.filter(file => !massiveId.includes(file.id) )
-                // console.log(checkValue_.length)
-                checkValue = [
-                    ...getDifference(files, massiveId)
-                ]
-                console.log(checkValue.length)
-                for (let p = 0; p < usersId.length; p++) {
-                    for (let i = 0; i < checkValue.length; i++) {
-
-
-                        bot.telegram.sendDocument(usersId[p], `https://docs.google.com/uc?export=download&id=${checkValue[i].id}`);
-
-
-                    }
-                }
-                massiveId = Object.assign([], files);
-            }
-        }, 2000)
-
-
-
+    }
+    else if (pizzaBasket.length === 0) {
+        ctx.reply('Кошик порожній :(')
     }
 
 
+})
+
+bot.action('btn_delete', (ctx) => {
+    ctx.reply('Кошик очищено :)');
+    pizzaBasket = [];
+    pizzaArr.map(obj => obj.amount = 1);
+    checkInvoiceCondition = true;
+
+    bot.telegram.deleteMessage(ctx.from.id, ctx.update.callback_query.message.message_id )
+
+
+})
+
+
+
+bot.on('pre_checkout_query', (ctx) => {
+
+        ctx.answerPreCheckoutQuery(true)
+
+    }
 
 )
 
 
+bot.on('successful_payment', async (ctx, next) => {
+    let textToCheck = pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount} вартість: ${obj.price} грн` ).toString()
+    let textToCheck_ = textToCheck.split('<b>').join('').split('</b>').join('')
+    let textToCheck2 = pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)
+    await ctx.reply('Оплата успішна, квитанцію про оплату надіслано на Вашу пошту')
+
+
+
+        let doc = new PDFDocument();
+       doc.pipe(fs.createWriteStream('check5.pdf'))
+        doc
+            .font('./times-new-roman-cyr.ttf')
+            .text(`Фіскальний чек № ${check}`)
+            .text(`Загальна вартісь: ${textToCheck2} грн`, {width: 310, align: 'center'})
+            .text(textToCheck_,{width: 410, align: 'center'});
+    doc.image('img.jpg', 430, 15, {fit: [100, 100], align: 'center', valign: 'center'})
+
+        doc.end();
+
+
+
+        setTimeout(()=>{ ctx.replyWithDocument({source: './check5.pdf', filename: `квитанція №${check}.pdf`})
+        }, 2000)
+
+
+    checkInvoiceCondition = true;
+    pizzaBasket = [];
+    pizzaArr.map(obj => obj.amount = 1);
+})
+
+
+
+
+
+
 bot.launch()
-
-
