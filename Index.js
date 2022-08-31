@@ -209,13 +209,37 @@ bot.command('start', (ctx) => {
 
 ]
 
- let pizzaBasket = [
+let sessionsUserData = [];
+  sessionsUserData.compareChatId = function (chat_id){
+       return  sessionsUserData.findIndex(obj => obj.chat_id === chat_id)
+  }
+    function sessionsUser(chat_id) {
 
- ]
+    let session = {
+        chat_id:chat_id,
+        pizzaBasket:[],
+
+       }
+
+       if(sessionsUserData.length === 0){
+            sessionsUserData.push(session)
+
+       }
+        if (!(sessionsUserData.some(obj => obj.chat_id === chat_id)))
+       {
+           sessionsUserData.push(session);
+       }
+
+
+        console.log('Користувачі')
+        sessionsUserData.forEach(obj => console.log(obj.chat_id))
+
+}
+
 
 
 bot.action('btnListOfFood', (ctx) => {
-
+    sessionsUser(ctx.chat.id);
 
     for (let i = 0; i <pizzaArr.length; i++) {
         bot.telegram.sendPhoto(ctx.chat.id,  'https://roll-club.kh.ua/wp-content/uploads/2021/06/pizza.jpg',
@@ -247,17 +271,17 @@ bot.action('btnListOfFood', (ctx) => {
             })
 
 
-              if (pizzaBasket.some(obj => obj.name === pizzaArr[i].name)) {
+             if (sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.some(obj => obj.name === pizzaArr[i].name)) {
 
-               pizzaBasket.map(obj => {if (obj.name === pizzaArr[i].name) {
+               sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.map(obj => {if (obj.name === pizzaArr[i].name) {
                    obj.amount++
                }
 
                })
 
               }
-               else pizzaBasket.push(pizzaArr[i])
-               console.log(pizzaBasket)
+               else sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.push(pizzaArr[i])
+               console.log(sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket)
 
 
 
@@ -308,7 +332,7 @@ function randomValueOfPreCheckOut() {
 let check;
 bot.action('btnBasket', (ctx) => {
       check = randomValueOfPreCheckOut()
-    ctx.reply(`Замовлення №${check} на суму: ${ pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)} грн очікує оплати: \n ${pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount}` )}`,
+    ctx.reply(`Замовлення №${check} на суму: ${ sessionsUserData[0].pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)} грн очікує оплати: \n ${sessionsUserData[0].pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount}` )}`,
         {
             parse_mode: 'HTML',
             reply_markup: {
@@ -352,7 +376,7 @@ const getInvoice = (id) => {
         title: `Замовлення №${check}` ,
         description: `Оплата послуг`,
         currency: 'UAH',
-        prices: [{label: 'Invoice Title', amount: 100 * pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)}],
+        prices: [{label: 'Invoice Title', amount: 100 * sessionsUserData[sessionsUserData.compareChatId(id)].pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)}],
         payload: {
             unique_id: `${id}_${Number(new Date())}`,
             provider_token:'632593626:TEST:sandbox_i38652068230'
@@ -371,7 +395,7 @@ const getInvoice = (id) => {
 
 bot.action('btn_pay',  (ctx) =>{
 
-    if (checkInvoiceCondition === true && pizzaBasket.length !== 0 )  {
+    if (checkInvoiceCondition === true && sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.length !== 0 )  {
 
         ctx.replyWithInvoice(getInvoice(ctx.from.id))
         checkInvoiceCondition = false;
@@ -381,7 +405,7 @@ bot.action('btn_pay',  (ctx) =>{
         ctx.reply('У вас уже є замовлення в черзі на оплату')
 
     }
-    else if (pizzaBasket.length === 0) {
+    else if (sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.length === 0) {
         ctx.reply('Кошик порожній :(')
     }
 
@@ -390,7 +414,7 @@ bot.action('btn_pay',  (ctx) =>{
 
 bot.action('btn_delete', (ctx) => {
     ctx.reply('Кошик очищено :)');
-    pizzaBasket = [];
+    sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket = [];
     pizzaArr.map(obj => obj.amount = 1);
     checkInvoiceCondition = true;
 
@@ -411,9 +435,9 @@ bot.on('pre_checkout_query', (ctx) => {
 
 
 bot.on('successful_payment', async (ctx, next) => {
-    let textToCheck = pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount} вартість: ${obj.price} грн` ).toString()
+    let textToCheck = sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount} вартість: ${obj.price} грн` ).toString()
     let textToCheck_ = textToCheck.split('<b>').join('').split('</b>').join('')
-    let textToCheck2 = pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)
+    let textToCheck2 = sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)
     await ctx.reply('Оплата успішна, квитанцію про оплату надіслано на Вашу пошту')
 
 
@@ -436,7 +460,7 @@ bot.on('successful_payment', async (ctx, next) => {
 
 
     checkInvoiceCondition = true;
-    pizzaBasket = [];
+    sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket = [];
     pizzaArr.map(obj => obj.amount = 1);
 })
 
