@@ -40,12 +40,12 @@ let locationPositions = [ {
 
 function  compareLocationPosition(arr, arg_latitude, arg_longitude) {
     let compare = [];
-     let latitude_dif = [];
-     let longitude_dif = [];
-     let dist_dif = [];
-     let res =  arr.forEach(element => compare.push(Math.abs(Number((Math.abs(element.lat) -Math.abs(arg_latitude)).toFixed(6))),
-         Math.abs(Number(Math.abs(element.long) - Math.abs(arg_longitude).toFixed(6)))))
-     compare.forEach(result => console.log(result))
+    let latitude_dif = [];
+    let longitude_dif = [];
+    let dist_dif = [];
+    let res =  arr.forEach(element => compare.push(Math.abs(Number((Math.abs(element.lat) -Math.abs(arg_latitude)).toFixed(6))),
+        Math.abs(Number(Math.abs(element.long) - Math.abs(arg_longitude).toFixed(6)))))
+    compare.forEach(result => console.log(result))
     for (let i = 0; i < compare.length; i += 2) {
         latitude_dif.push(compare[i]);
     }
@@ -80,7 +80,7 @@ function  compareLocationPosition(arr, arg_latitude, arg_longitude) {
 
 }
 
- function addNewObjectInMap(arg,arg1,arg2) {
+function addNewObjectInMap(arg,arg1,arg2) {
     let i = 2;
     let newObject = {
         id: i ,
@@ -88,27 +88,12 @@ function  compareLocationPosition(arr, arg_latitude, arg_longitude) {
         lat: arg1,
         long: arg2
     }
-     locationPositions.push(newObject)
-     i++;
- }
+    locationPositions.push(newObject)
+    i++;
+}
 
-const oauth2Client = new google.auth.OAuth2(
-    CLIENT_ID,
-    CLIENT_SECRET,
-    REDIRECT_URI
-)
 
-oauth2Client.setCredentials({refresh_token:REFRESH_TOKEN})
 
-bot.hears('start', (ctx) => {
-    setInterval(() =>  {ctx.msg.broadcast({
-        users: ['367613742'],
-        isCopy: false,
-        message: {
-            text: '',
-        },
-    })}, 5000)
-})
 bot.hears('map', (ctx) => {
     ctx.telegram.sendMessage(ctx.chat.id, 'https://www.google.com/maps/place/%D0%A3%D0%B6%D0%B3%D0%BE%D1%80%D0%BE%D0%B4,+%D0%97%D0%B0%D0%BA%D0%B0%D1%80%D0%BF%D0%B0%D1%82%D1%81%D0%BA%D0%B0%D1%8F+%D0%BE%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D1%8C/@48.6193605,22.2095979,12z/data=!3m1!4b1!4m5!3m4!1s0x473919b944b6e3d9:0xda6ae0130042a3c!8m2!3d48.6208!4d22.287883')
 })
@@ -118,27 +103,27 @@ bot.hears('map', (ctx) => {
 
 let check_add = false;
 let triger = false;
- let latitude;
-  let longtitude;
-  let nameOfObject;
+let latitude;
+let longtitude;
+let nameOfObject;
 let new_latitude;
 let new_longitude;
 bot.on('location', (ctx) => {
-     if (check_add === false) {
-         latitude = ctx.message.location.latitude;
-         longtitude = ctx.message.location.longitude;
+    if (check_add === false) {
+        latitude = ctx.message.location.latitude;
+        longtitude = ctx.message.location.longitude;
 
-         compareLocationPosition(locationPositions, latitude, longtitude);
-         bot.telegram.sendMessage(ctx.chat.id, `Найближче відділення поряд: \n ${locationPositions[shortDistanceId].name}`)
-         bot.telegram.sendLocation(ctx.chat.id, locationPositions[shortDistanceId].lat, locationPositions[shortDistanceId].long)
-     }
+        compareLocationPosition(locationPositions, latitude, longtitude);
+        bot.telegram.sendMessage(ctx.chat.id, `Найближче відділення поряд: \n ${locationPositions[shortDistanceId].name}`)
+        bot.telegram.sendLocation(ctx.chat.id, locationPositions[shortDistanceId].lat, locationPositions[shortDistanceId].long)
+    }
     if (check_add === true ) {
         new_latitude = ctx.message.location.latitude;
         new_longitude = ctx.message.location.longitude;
         addNewObjectInMap(nameOfObject,new_latitude, new_longitude);
         bot.telegram.sendMessage(ctx.chat.id, 'Локація успішно додана :)');
-                console.log(check_add)
-                check_add = false;
+        console.log(check_add)
+        check_add = false;
 
 
     }
@@ -152,14 +137,14 @@ const inlineKeyboard = Markup.inlineKeyboard([
 bot.hears('add', (ctx) => {
     check_add = true;
     triger = true;
-     bot.telegram.sendMessage(ctx.chat.id,'Hello', inlineKeyboard )
+    bot.telegram.sendMessage(ctx.chat.id,'Hello', inlineKeyboard )
     console.log(check_add)
     console.log(triger)
 })
 
 
 bot.command('start', (ctx) => {
-     ctx.reply(` Привіт, ${ctx.message.chat.first_name} \n За допомогою нашого телеграм боту, ти можеш замовити доставку піцци та їжі. \n Обери необхідну опцію нижче \n Зв'яжися з нами: \n +380 95 123 45 67 \n +380 95 123 45 67 \n
+    ctx.reply(` Привіт, ${ctx.message.chat.first_name} \n За допомогою нашого телеграм боту, ти можеш замовити доставку піцци та їжі. \n Обери необхідну опцію нижче \n Зв'яжися з нами: \n +380 95 123 45 67 \n +380 95 123 45 67 \n
  
  `,{
         reply_markup: {
@@ -181,58 +166,103 @@ bot.command('start', (ctx) => {
 
 
 
-  let pizzaArr = [
-      {
-      id: 1,
-          name:`<b> Маскальска дівка </b> (500гр) (40см) `,
-      description: '- Тісто \n - Томатний соус \n - Шинка \n ' ,
-      urlImage: '',
-      price: 10,
-          amount: 1
-      },
-      {
-          id: 2,
-          name:` <b> Дуже файна піцца </b> (500гр) (40см)`,
-          description: '- М`ясо куряче \n курка карі \n',
-          urlImage: '',
-          price: 22,
-          amount: 1
-      },
-      {
-          id: 3,
-          name:` <b> Сімейна </b> (500гр) (40см)`,
-          description: '- М`ясо куряче \n курка карі \n',
-          urlImage: '',
-          price: 15,
-          amount: 1
-      },
+let pizzaArr = [
+    {
+        id: 1,
+        name:`<b>Слава Україні! </b> (500гр) (40см) `,
+        description: '- Тісто \n - Томатний соус \n - Шинка \n ' ,
+        urlImage: '',
+        price: 10,
+        amount: 1,
+
+    },
+    {
+        id: 2,
+        name:` <b> Дуже файна піцца </b> (500гр) (40см)`,
+        description: '- М`ясо куряче \n курка карі \n',
+        urlImage: '',
+        price: 22,
+        amount: 1
+    },
+    {
+        id: 3,
+        name:` <b> Сімейна </b> (500гр) (40см)`,
+        description: '- М`ясо куряче \n курка карі \n',
+        urlImage: '',
+        price: 15,
+        amount: 1
+    },
 
 ]
 
 let sessionsUserData = [];
-  sessionsUserData.compareChatId = function (chat_id){
-       return  sessionsUserData.findIndex(obj => obj.chat_id === chat_id)
-  }
-    function sessionsUser(chat_id) {
+
+sessionsUserData.compareChatId = function (chat_id){
+
+    return  sessionsUserData.findIndex(obj => obj.chat_id === chat_id)
+}
+sessionsUserData.getCheck = function (chat_id) {
+    let check = randomValueOfPreCheckOut();
+
+        sessionsUserData[sessionsUserData.compareChatId(chat_id)].check = check;
+        return sessionsUserData[sessionsUserData.compareChatId(chat_id)].check
+
+}
+sessionsUserData.payCheck = function (chat_id, ctx) {
+
+    if (sessionsUserData[sessionsUserData.compareChatId(chat_id)].checkInvoiceCondition === true && sessionsUserData[sessionsUserData.compareChatId(chat_id)].pizzaBasket.length !== 0 )  {
+
+        ctx.replyWithInvoice(getInvoice(chat_id))
+        sessionsUserData[sessionsUserData.compareChatId(chat_id)].checkInvoiceCondition = false;
+
+    }
+    else if (sessionsUserData[sessionsUserData.compareChatId(chat_id)].checkInvoiceCondition === false ){
+        ctx.reply('У вас уже є замовлення в черзі на оплату')
+
+    }
+    else if (sessionsUserData[sessionsUserData.compareChatId(chat_id)].pizzaBasket.length === 0) {
+        ctx.reply('Кошик порожній :(')
+    }
+}
+function sessionsUser(chat_id) {
 
     let session = {
         chat_id:chat_id,
         pizzaBasket:[],
-
-       }
-
-       if(sessionsUserData.length === 0){
-            sessionsUserData.push(session)
-
-       }
-        if (!(sessionsUserData.some(obj => obj.chat_id === chat_id)))
-       {
-           sessionsUserData.push(session);
-       }
+        checkInvoiceCondition: true,
+        close: function () {
+            sessionsUserData.splice(sessionsUserData.compareChatId(this.chat_id), 1);
+        },
+        saleForClient: function () {
+            let SaleMission = 10;
 
 
-        console.log('Користувачі')
-        sessionsUserData.forEach(obj => console.log(obj.chat_id))
+            sessionsUserData[sessionsUserData.compareChatId(this.chat_id)].saleObj++;
+          return  bot.telegram.sendMessage(this.chat_id,
+               `До Вашої знижки залишилося ${SaleMission - 
+               sessionsUserData[sessionsUserData.compareChatId(this.chat_id)].saleObj} піц :)`)
+
+        },
+        createSale: function () {
+            if(sessionsUserData[sessionsUserData.compareChatId(this.chat_id)].saleObj === undefined) {
+                sessionsUserData[sessionsUserData.compareChatId(this.chat_id)].saleObj = 0;
+            }
+        }
+
+    }
+
+    if(sessionsUserData.length === 0){
+        sessionsUserData.push(Object.assign({}, session))
+
+    }
+    if (!(sessionsUserData.some(obj => obj.chat_id === chat_id)))
+    {
+        sessionsUserData.push(Object.assign({}, session));
+    }
+
+
+    console.log('Користувачі')
+    sessionsUserData.forEach(obj => console.log(obj.chat_id))
 
 }
 
@@ -254,35 +284,42 @@ bot.action('btnListOfFood', (ctx) => {
                     ]
                 }
             }
-            )
+        )
         bot.action(`btn-${i}`, (ctx) => {
 
-            bot.telegram.sendMessage(ctx.chat.id, `Ваше замовлення: \n ${pizzaArr[i].name} \n   успішно додане до кошику :)`,{
-                parse_mode: 'HTML',
-                reply_markup: {
+                bot.telegram.sendMessage(ctx.chat.id, `Ваше замовлення: \n ${pizzaArr[i].name} \n   успішно додане до кошику :)`,{
+                    parse_mode: 'HTML',
+                    reply_markup: {
 
-                    inline_keyboard: [
-                        [{text:'Перейти до кошику', callback_data:'btnBasket'}],
-                        [{text:'Повернутися до меню', callback_data:'btnMenu'}]
-                    ],
+                        inline_keyboard: [
+                            [{text:'Перейти до кошику', callback_data:'btnBasket'}],
+                            [{text:'Повернутися до меню', callback_data:'btnMenu'}]
+                        ],
+
+                    }
+
+                })
+
+
+                if (sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.some(obj => obj.name === pizzaArr[i].name)) {
+
+                    sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.forEach(obj => {if (obj.name === pizzaArr[i].name ) {
+                        obj.amount++;
+                    }
+
+                    })
+
+                }
+                else
+                {
+                    sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.push(Object.assign({},pizzaArr[i]))
 
                 }
 
-            })
 
 
-             if (sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.some(obj => obj.name === pizzaArr[i].name)) {
-
-               sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.map(obj => {if (obj.name === pizzaArr[i].name) {
-                   obj.amount++
-               }
-
-               })
-
-              }
-               else sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.push(pizzaArr[i])
-               console.log(sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket)
-
+                console.log(sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket)
+                   console.log(pizzaArr)
 
 
             }
@@ -325,25 +362,32 @@ function randomValueOfPreCheckOut() {
 
     let result =   arrayOfValue.join('');
     console.log(result)
-      return Number(result);
+    return Number(result);
 
 }
 
-let check;
+
 bot.action('btnBasket', (ctx) => {
-      check = randomValueOfPreCheckOut()
-    ctx.reply(`Замовлення №${check} на суму: ${ sessionsUserData[0].pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)} грн очікує оплати: \n ${sessionsUserData[0].pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount}` )}`,
-        {
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [{text: 'Оплатити/Видалити', callback_data: 'btn_pay'}]
 
-                ]
+    if ( sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)] === undefined){
+        ctx.reply('Ваш кошик пустий :(');
+    }
+      else {
+        ctx.reply(`Замовлення №${sessionsUserData.getCheck(ctx.chat.id)} на суму: ${sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.reduce(function (sum, current) {
+                return sum + Number(current.price * current.amount)
+            }, 0)} грн очікує оплати: \n ${sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount}`)}`,
+            {
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{text: 'Оплатити/Видалити', callback_data: 'btn_pay'}]
+
+                    ]
+                }
             }
-        }
         )
-
+    }
+       console.log(sessionsUserData)
 })
 
 
@@ -353,19 +397,17 @@ bot.action('btnBasket', (ctx) => {
 bot.action('add', (ctx) => {
     bot.telegram.sendMessage(ctx.chat.id, `Додайте назву відділеня`)
 
-        bot.on('text', (ctx) => {
-            if(triger === true) {
-                nameOfObject = ctx.message.text;
-                console.log(nameOfObject)
-                bot.telegram.sendMessage(ctx.chat.id, 'Надішліть геопозицію доданого відділення')
-                triger = false;
-            }
-        })
+    bot.on('text', (ctx) => {
+        if(triger === true) {
+            nameOfObject = ctx.message.text;
+            console.log(nameOfObject)
+            bot.telegram.sendMessage(ctx.chat.id, 'Надішліть геопозицію доданого відділення')
+            triger = false;
+        }
+    })
 
 
 })
-
-let checkInvoiceCondition = true;
 
 const getInvoice = (id) => {
     const invoice = {
@@ -373,7 +415,7 @@ const getInvoice = (id) => {
         chat_id: id,
         provider_token: '632593626:TEST:sandbox_i38652068230',
         start_parameter: 'unique_string',
-        title: `Замовлення №${check}` ,
+        title: `Замовлення №${sessionsUserData[sessionsUserData.compareChatId(id)].check}` ,
         description: `Оплата послуг`,
         currency: 'UAH',
         prices: [{label: 'Invoice Title', amount: 100 * sessionsUserData[sessionsUserData.compareChatId(id)].pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)}],
@@ -384,7 +426,7 @@ const getInvoice = (id) => {
         reply_markup: {
             inline_keyboard:[
                 [{text: `Оплатити`, pay: true }],
-                    [{text: `Видалити `, callback_data: 'btn_delete' }]
+                [{text: `Видалити `, callback_data: 'btn_delete' }]
             ]
 
         }
@@ -395,19 +437,7 @@ const getInvoice = (id) => {
 
 bot.action('btn_pay',  (ctx) =>{
 
-    if (checkInvoiceCondition === true && sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.length !== 0 )  {
-
-        ctx.replyWithInvoice(getInvoice(ctx.from.id))
-        checkInvoiceCondition = false;
-
-    }
-    else if (checkInvoiceCondition === false ){
-        ctx.reply('У вас уже є замовлення в черзі на оплату')
-
-    }
-    else if (sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.length === 0) {
-        ctx.reply('Кошик порожній :(')
-    }
+    sessionsUserData.payCheck(ctx.chat.id, ctx);
 
 
 })
@@ -415,8 +445,8 @@ bot.action('btn_pay',  (ctx) =>{
 bot.action('btn_delete', (ctx) => {
     ctx.reply('Кошик очищено :)');
     sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket = [];
-    pizzaArr.map(obj => obj.amount = 1);
-    checkInvoiceCondition = true;
+
+    sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].checkInvoiceCondition = true;
 
     bot.telegram.deleteMessage(ctx.from.id, ctx.update.callback_query.message.message_id )
 
@@ -435,33 +465,49 @@ bot.on('pre_checkout_query', (ctx) => {
 
 
 bot.on('successful_payment', async (ctx, next) => {
-    let textToCheck = sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount} вартість: ${obj.price} грн` ).toString()
-    let textToCheck_ = textToCheck.split('<b>').join('').split('</b>').join('')
-    let textToCheck2 = sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.reduce(function (sum, current){ return sum + Number(current.price * current.amount) },0)
-    await ctx.reply('Оплата успішна, квитанцію про оплату надіслано на Вашу пошту')
+        sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].createSale();
+        sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].saleForClient();
 
+        let textToCheck = sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.map(obj => ` \n ${obj.name} шт: ${obj.amount} вартість: ${obj.price} грн`).toString()
+        let textToCheck_ = textToCheck.split('<b>').join('').split('</b>').join('')
+        let textToCheck2 = sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket.reduce(function (sum, current) {
+            return sum + Number(current.price * current.amount)
+        }, 0)
+       await  ctx.reply('Оплата успішна, квитанцію про оплату надіслано на Вашу пошту')
 
 
         let doc = new PDFDocument();
-       doc.pipe(fs.createWriteStream('check5.pdf'))
+        doc.pipe(fs.createWriteStream(`${sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].check}.pdf`))
         doc
             .font('./times-new-roman-cyr.ttf')
-            .text(`Фіскальний чек № ${check}`)
+            .text(`Фіскальний чек № ${sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].check}`)
             .text(`Загальна вартісь: ${textToCheck2} грн`, {width: 310, align: 'center'})
-            .text(textToCheck_,{width: 410, align: 'center'});
-    doc.image('img.jpg', 430, 15, {fit: [100, 100], align: 'center', valign: 'center'})
+            .text(textToCheck_, {width: 410, align: 'center'})
+        doc.image('img.jpg', 430, 15, {fit: [100, 100], align: 'center', valign: 'center'})
 
         doc.end();
 
 
 
-        setTimeout(()=>{ ctx.replyWithDocument({source: './check5.pdf', filename: `квитанція №${check}.pdf`})
-        }, 2000)
+       setTimeout(()=> {
+           ctx.replyWithDocument({
+               source: `./${sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].check}.pdf`,
+               filename: `квитанція №${sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].check}.pdf`
+           })
+
+       },500);
+
+       setTimeout(() =>{
+           sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].checkInvoiceCondition = true;
+           sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket = [];
+           sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].close();
+       }, 500)
 
 
-    checkInvoiceCondition = true;
-    sessionsUserData[sessionsUserData.compareChatId(ctx.chat.id)].pizzaBasket = [];
-    pizzaArr.map(obj => obj.amount = 1);
+
+
+
+
 })
 
 
